@@ -23,6 +23,6 @@ class TestTextNode(unittest.TestCase):
         node = TextNode("This is a text node", TextType.BOLD_TEXT)
         node2 = TextNode("This is a text node", TextType.BOLD_TEXT, None)
         self.assertEqual(node, node2)
-        
+
 if __name__ == "__main__":
     unittest.main()
