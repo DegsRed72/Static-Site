@@ -86,6 +86,53 @@ class Test_Markdown(unittest.TestCase):
             TextNode("Bolded_word", TextType.BOLD),
             TextNode("", TextType.PLAIN),
             ])
+        
+    def test_extract_markdown_images(self):
+        matches = extract_markdown_images(
+            "This is text with an ![image](https://i.imgur.com/zjjcJKZ.png)"
+        )
+        self.assertListEqual([("image", "https://i.imgur.com/zjjcJKZ.png")], matches)
+
+    def test_multiple_markdown_images(self):
+        matches = extract_markdown_images(
+            "This is text with a ![rick roll](https://i.imgur.com/aKaOqIh.gif) and ![obi wan](https://i.imgur.com/fJRm4Vk.jpeg)")
+        self.assertListEqual([("rick roll", "https://i.imgur.com/aKaOqIh.gif"), ("obi wan", "https://i.imgur.com/fJRm4Vk.jpeg")], matches)
+
+    def test_no_markdown_images(self):
+        matches = extract_markdown_images("This is text with no image")
+        self.assertListEqual([], matches)
+
+    def test_no_image_alt_text_or_url(self):
+        self.assertEqual(extract_markdown_images("![]()"), [("", "")])
+
+    def test_extract_markdown_links(self):
+        matches = extract_markdown_links(
+            "This is text with a link [to boot dev](https://www.boot.dev)"
+        )
+        self.assertListEqual([("to boot dev", "https://www.boot.dev")], matches)
+
+    def test_multiple_markdown_links(self):
+        matches = extract_markdown_links(
+            "This is text with a link [to boot dev](https://www.boot.dev) and [to youtube](https://www.youtube.com/@bootdotdev)")
+        self.assertListEqual([("to boot dev", "https://www.boot.dev"), ("to youtube", "https://www.youtube.com/@bootdotdev")], matches)
+
+    def test_no_markdown_links(self):
+        matches = extract_markdown_links("This is text with no link")
+        self.assertListEqual([], matches)
+
+    def test_no_link_anchor_or_url(self):
+        self.assertEqual(extract_markdown_links("[]()"), [("", "")])
+
+
+    def test_links_do_not_match_images(self):
+        text = "![img](http://x.png) and [link](http://x.com)"
+        self.assertEqual(extract_markdown_links(text), [("link", "http://x.com")])
+
+    def test_disallow_interior_brackets_and_parenthesis(self):
+        self.assertEqual(extract_markdown_images("![a[b]](u)"), [])
+        self.assertEqual(extract_markdown_images("![a](u(v))"), [])
+        self.assertEqual(extract_markdown_links("[a[b]](u)"), [])
+        self.assertEqual(extract_markdown_links("[a](u(v))"), [])
 
 if __name__ == "__main__":
     unittest.main()
