@@ -43,7 +43,6 @@ class TextNode():
 
 
 
-        #if text_node.text_type not in TextType.__members__:
-            #raise Exception("type not in listed types")
+
         
         
