@@ -39,6 +39,55 @@ def check_correct_delimiter(delimiter, text_type):
         case _:
             raise Exception("Invalid delimiter (must be '**', '_', or '`')")
         
+def split_nodes_image(old_nodes):
+    new_nodes = []
+    for node in old_nodes:
+        if isinstance(node, TextNode):
+            if not extract_markdown_images(node.text):
+                new_nodes.append(node)
+            else:
+                for i in range(0, len(extract_markdown_images(node.text))):
+                    image_alt, image_link = extract_markdown_images(node.text)[i]
+                    if i == 0:
+                        sections = node.text.split(f"![{image_alt}]({image_link})", 1)
+                        new_nodes.append(TextNode(sections[i], TextType.PLAIN))
+                        new_nodes.append(TextNode(image_alt, TextType.IMAGE, image_link))
+                    else:
+                        sections.extend(sections[i].split(f"![{image_alt}]({image_link})", 1))
+                        del(sections[i])
+                        new_nodes.append(TextNode(sections[i], TextType.PLAIN))
+                        new_nodes.append(TextNode(image_alt, TextType.IMAGE, image_link))
+                        if i == len(extract_markdown_images(node.text)) - 1 and sections[i + 1]:
+                            new_nodes.append(TextNode(sections[i + 1], TextType.PLAIN))                        
+        else:
+            raise Exception("Not a TextNode")
+                
+    return new_nodes
+
+def split_nodes_link(old_nodes):
+    new_nodes = []
+    for node in old_nodes:
+        if isinstance(node, TextNode):
+            if not extract_markdown_links(node.text):
+                new_nodes.append(node)
+            else:
+                for i in range(0, len(extract_markdown_links(node.text))):
+                    anchor_text, url = extract_markdown_links(node.text)[i]
+                    if i == 0:
+                        sections = node.text.split(f"[{anchor_text}]({url})", 1)
+                        new_nodes.append(TextNode(sections[i], TextType.PLAIN))
+                        new_nodes.append(TextNode(anchor_text, TextType.LINK, url))
+                    else:
+                        sections.extend(sections[i].split(f"[{anchor_text}]({url})", 1))
+                        del(sections[i])
+                        new_nodes.append(TextNode(sections[i], TextType.PLAIN))
+                        new_nodes.append(TextNode(anchor_text, TextType.LINK, url))
+                        if i == len(extract_markdown_links(node.text)) - 1 and sections[i + 1]:
+                            new_nodes.append(TextNode(sections[i + 1], TextType.PLAIN))                     
+        else:
+            raise Exception("Not a TextNode")
+                
+    return new_nodes
 
 def extract_markdown_images(text):
     return re.findall(r"!\[([^\[\]]*)\]\(([^\(\)]*)\)", text)
