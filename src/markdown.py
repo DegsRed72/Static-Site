@@ -1,6 +1,14 @@
 from textnode import *
 import re
 
+def text_to_textnode(text):
+    new_text_nodes = split_nodes_delimiter([TextNode(text, TextType.PLAIN)], "**", TextType.BOLD)
+    new_text_nodes = split_nodes_delimiter(new_text_nodes, "_", TextType.ITALIC)
+    new_text_nodes = split_nodes_delimiter(new_text_nodes, "`", TextType.CODE)
+    new_text_nodes = split_nodes_image(new_text_nodes)
+    new_text_nodes = split_nodes_link(new_text_nodes)
+    return new_text_nodes
+
 def split_nodes_delimiter(old_nodes, delimiter, text_type):
     new_nodes = []
     for node in old_nodes:
@@ -52,13 +60,15 @@ def split_nodes_image(old_nodes):
                         sections = node.text.split(f"![{image_alt}]({image_link})", 1)
                         new_nodes.append(TextNode(sections[i], TextType.PLAIN))
                         new_nodes.append(TextNode(image_alt, TextType.IMAGE, image_link))
+                        if i == len(extract_markdown_images(node.text)) - 1 and sections[i + 1]:
+                            new_nodes.append(TextNode(sections[i + 1], TextType.PLAIN))                        
                     else:
                         sections.extend(sections[i].split(f"![{image_alt}]({image_link})", 1))
                         del(sections[i])
                         new_nodes.append(TextNode(sections[i], TextType.PLAIN))
                         new_nodes.append(TextNode(image_alt, TextType.IMAGE, image_link))
                         if i == len(extract_markdown_images(node.text)) - 1 and sections[i + 1]:
-                            new_nodes.append(TextNode(sections[i + 1], TextType.PLAIN))                        
+                            new_nodes.append(TextNode(sections[i + 1], TextType.PLAIN))                      
         else:
             raise Exception("Not a TextNode")
                 
@@ -77,13 +87,15 @@ def split_nodes_link(old_nodes):
                         sections = node.text.split(f"[{anchor_text}]({url})", 1)
                         new_nodes.append(TextNode(sections[i], TextType.PLAIN))
                         new_nodes.append(TextNode(anchor_text, TextType.LINK, url))
+                        if i == len(extract_markdown_images(node.text)) - 1 and sections[i + 1]:
+                            new_nodes.append(TextNode(sections[i + 1], TextType.PLAIN))
                     else:
                         sections.extend(sections[i].split(f"[{anchor_text}]({url})", 1))
                         del(sections[i])
                         new_nodes.append(TextNode(sections[i], TextType.PLAIN))
                         new_nodes.append(TextNode(anchor_text, TextType.LINK, url))
-                        if i == len(extract_markdown_links(node.text)) - 1 and sections[i + 1]:
-                            new_nodes.append(TextNode(sections[i + 1], TextType.PLAIN))                     
+                        if i == len(extract_markdown_images(node.text)) - 1 and sections[i + 1]:
+                            new_nodes.append(TextNode(sections[i + 1], TextType.PLAIN))                   
         else:
             raise Exception("Not a TextNode")
                 
