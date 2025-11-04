@@ -303,5 +303,110 @@ This is **bolded** paragraph
             [
             ],
         )
+
+    def test_heading(self):
+       markdown = "### Heading"
+       type = block_to_blocktype(markdown)
+
+       self.assertEqual(type, BlockType.HEADING) 
+    
+    def test_wrong_headings(self):
+       markdown = "yabba### Heading"
+       type = block_to_blocktype(markdown)
+
+       self.assertEqual(type, BlockType.PARAGRAPH) 
+
+    def test_wrong_headings_1(self):
+       markdown = """yabba
+### Heading"""
+       type = block_to_blocktype(markdown)
+
+       self.assertEqual(type, BlockType.PARAGRAPH) 
+        
+
+
+    def test_code_block(self):
+       markdown = "``` code here ```"
+       type = block_to_blocktype(markdown)
+
+       self.assertEqual(type, BlockType.CODE) 
+
+    def test_wrong_code(self):
+       markdown = "``` code here"
+       type = block_to_blocktype(markdown)
+
+       self.assertEqual(type, BlockType.PARAGRAPH) 
+
+    def test_wrong_code_1(self):
+       markdown = " code here ```"
+       type = block_to_blocktype(markdown)
+
+       self.assertEqual(type, BlockType.PARAGRAPH) 
+
+    def test_quote(self):
+       markdown = """>quote here
+>quote continued"""
+       type = block_to_blocktype(markdown)
+
+       self.assertEqual(type, BlockType.QUOTE)    
+
+    def test_wrong_quote(self):
+       markdown = """>quote here
+quote continued"""
+       type = block_to_blocktype(markdown)
+
+       self.assertEqual(type, BlockType.PARAGRAPH)         
+
+    def test_unordered_list(self):
+       markdown = """-  list 1
+- list 2
+- list 3"""
+       type = block_to_blocktype(markdown)
+
+       self.assertEqual(type, BlockType.UNORDERED_LIST) 
+
+    def test_wrong_unordered_list(self):
+       markdown = """- list 1
+list 2
+- list 3"""
+       type = block_to_blocktype(markdown)
+
+       self.assertEqual(type, BlockType.PARAGRAPH) 
+
+    def test_wrong_unordered_list_1(self):
+       markdown = """-list 1
+- list 2
+- list 3"""
+       type = block_to_blocktype(markdown)
+
+       self.assertEqual(type, BlockType.PARAGRAPH) 
+
+    def test_ordered_list(self):
+        markdown = """1. Yada yada
+2. Wabbadoo
+3. Gobbledeegook"""
+        type = block_to_blocktype(markdown)
+        self.assertEqual(type, BlockType.ORDERED_LIST)
+
+    def test_wrong_ordered_list(self):
+        markdown = """1.Yada yada
+2. Wabbadoo
+3. Gobbledeegook"""
+        type = block_to_blocktype(markdown)
+        self.assertEqual(type, BlockType.PARAGRAPH)
+
+    def test_wrong_ordered_list_1(self):
+        markdown = """1. Yada yada
+3. Wabbadoo
+3. Gobbledeegook"""
+        type = block_to_blocktype(markdown)
+        self.assertEqual(type, BlockType.PARAGRAPH)
+    
+    def test_wrong_ordered_list_2(self):
+        markdown = """1.
+2. Wabbadoo
+3. Gobbledeegook"""
+        type = block_to_blocktype(markdown)
+        self.assertEqual(type, BlockType.PARAGRAPH)
 if __name__ == "__main__":
     unittest.main()

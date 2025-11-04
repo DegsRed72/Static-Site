@@ -1,6 +1,14 @@
 from textnode import *
 import re
 
+class BlockType(Enum):
+    PARAGRAPH = "paragraph"
+    HEADING = "heading"
+    CODE = "code"
+    QUOTE = "quote"
+    UNORDERED_LIST = "unordered_list"
+    ORDERED_LIST = "ordered_list"
+
 def text_to_textnode(text):
     new_text_nodes = split_nodes_delimiter([TextNode(text, TextType.PLAIN)], "**", TextType.BOLD)
     new_text_nodes = split_nodes_delimiter(new_text_nodes, "_", TextType.ITALIC)
@@ -115,3 +123,60 @@ def markdown_to_blocks(markdown):
         if block:
             formatted_blocks.append(block)
     return formatted_blocks
+
+def block_to_blocktype(markdown):
+    if markdown.startswith(("# ", "## ", "### ", "#### ", "##### ", "###### ")):
+        return BlockType.HEADING
+    elif markdown.startswith("```") and markdown.endswith("```"):
+        return BlockType.CODE
+    elif check_quotes(markdown):
+        return BlockType.QUOTE
+    elif check_unordered_list(markdown):
+        return BlockType.UNORDERED_LIST
+    elif check_ordered_list(markdown):
+        return BlockType.ORDERED_LIST
+    else:
+        return BlockType.PARAGRAPH
+        
+def check_quotes(text):
+    split_lines = text.split("\n")
+    for line in split_lines:
+        if not line.startswith(">"):
+            return False
+    return True
+
+def check_unordered_list(text):
+    split_lines = text.split("\n")
+    for line in split_lines:
+        if not line.startswith("- "):
+            return False
+    return True   
+ 
+def check_ordered_list(text):
+    if text[0] == "1":
+        split_lines = text.split("\n")
+        count = 1
+        for line in split_lines:
+            if len(line) >= 3:
+                if line[0] == "0":
+                    return False
+                prefix = ""
+                next_two = ""
+                for c in line:
+                    if c.isdigit():
+                        prefix += f"{c}"
+                    else:
+                        break
+                for c in line:
+                    if not c.isdigit():
+                        if len(next_two) < 2:
+                            next_two += f"{c}"
+
+                if int(prefix) != count or next_two != ". ":
+                    return False
+                else:
+                    count += 1
+        
+        return True
+    else:
+        return False
