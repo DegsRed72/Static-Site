@@ -1,4 +1,5 @@
 from textnode import *
+from htmlnode import LeafNode, HTMLNode, ParentNode
 import re
 
 class BlockType(Enum):
@@ -180,3 +181,94 @@ def check_ordered_list(text):
         return True
     else:
         return False
+    
+def markdown_to_html_node(markdown):
+    if not markdown:
+        raise Exception("No markdown")
+    div_node = ParentNode("div", [])
+    blocks = markdown_to_blocks(markdown)
+    for block in blocks:
+        type = block_to_blocktype(block)        
+        node = None
+        match type:
+            case BlockType.PARAGRAPH:
+                block = " ".join(block.splitlines()).strip() 
+                node = create_paragraph_node()
+                node.children = text_to_children(block)
+            case BlockType.HEADING:
+                node = create_heading_node(block)
+                block = block.lstrip("# ")
+                node.children = text_to_children(block)
+            case BlockType.CODE:
+                node = create_code_node()
+                block = block.strip("```")
+                block = block.splitlines()
+                block = "\n".join(block)
+                block = block.lstrip("\n")
+                block += "\n"
+                node.children = [TextNode.text_node_to_html_node(TextNode(block, TextType.CODE))]
+            case BlockType.QUOTE:
+                node = create_quote_node()
+                block = block.lstrip("> ")
+                node.children = text_to_children(block)
+            case BlockType.UNORDERED_LIST:
+                node = create_unordered_list_node()
+                items = block.splitlines()
+                list_nodes = []
+                for item in items:
+                    if len(item) > 1:
+                        item = item.lstrip("- ")
+                        list_node = create_list_node()
+                        list_node.children = text_to_children(item)
+                        list_nodes.append(list_node)
+                node.children = list_nodes
+            case BlockType.ORDERED_LIST:
+                node = create_ordered_list_node()
+                items = block.splitlines()
+                list_nodes = []
+                count = 0
+                for item in items:
+                    if len(item) > 1:
+                        count += 1
+                        item = item.lstrip(f"{count}. ")
+                        list_node = create_list_node()
+                        list_node.children = text_to_children(item)
+                        list_nodes.append(list_node)
+                node.children = list_nodes
+            case _:
+                raise Exception("Invalid BlockType")
+        div_node.children.append(node)
+    return div_node
+
+def create_paragraph_node():
+    return ParentNode("p", None)
+
+def create_heading_node(text):
+    count = 0
+    for c in text:
+        if c == "#":
+            count += 1
+    return ParentNode(f"h{count}", None)
+        
+
+def create_code_node():
+    return ParentNode("pre", None)
+
+def create_quote_node():
+    return ParentNode("blockquote", None)
+
+def create_unordered_list_node():
+    return ParentNode("ul", None)
+
+def create_ordered_list_node():
+    return ParentNode("ol", None)
+
+def create_list_node():
+    return ParentNode("li", None)
+
+def text_to_children(text):
+    children = []
+    text_nodes = text_to_textnode(text)
+    for node in text_nodes:
+        children.append(TextNode.text_node_to_html_node(node))
+    return children
