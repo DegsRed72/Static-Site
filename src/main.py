@@ -1,8 +1,8 @@
-from textnode import TextNode, TextType
+from copy_static import copy_contents_to_other_dir
 
 def main():
-    new_node = TextNode("oogabooga", TextType.PLAIN_TEXT, None)
-    print(new_node)
+    copy_contents_to_other_dir()
+    
 
 if __name__ == "__main__":
     main()
