@@ -1,4 +1,4 @@
-import os, shutil
+import os, shutil, pathlib
 from markdown import markdown_to_html_node
 def extract_title(markdown):
     if markdown.startswith("# "):
@@ -21,6 +21,19 @@ def generate_page(from_path, template_path, dest_path):
         shutil.rmtree(dest_path)
     with open(dest_path, "w") as d:
         d.write(usable_template)
+
+def generate_page_recursive(dir_path_content, template_path, dest_dir_path):
+    content_files = os.listdir(dir_path_content)
+    for file in content_files:
+        path = os.path.join(dir_path_content, pathlib.Path(file))
+        if os.path.isfile(path):
+            generate_page(path, template_path, f"{dest_dir_path}index.html")
+        else:
+            if not os.path.exists(f"{dest_dir_path}{file}"):
+                os.mkdir(f"{dest_dir_path}{file}")
+            generate_page_recursive(dir_path_content + file + "/", template_path, dest_dir_path + file + "/")
+            
+
 
 
 
