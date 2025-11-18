@@ -192,7 +192,7 @@ def markdown_to_html_node(markdown):
         node = None
         match type:
             case BlockType.PARAGRAPH:
-                block = " ".join(block.splitlines()).strip() 
+                block = "".join(block.splitlines()).strip() 
                 node = create_paragraph_node()
                 node.children = text_to_children(block)
             case BlockType.HEADING:
@@ -237,7 +237,8 @@ def markdown_to_html_node(markdown):
                 node.children = list_nodes
             case _:
                 raise Exception("Invalid BlockType")
-        div_node.children.append(node)
+        if node.children:
+            div_node.children.append(node)
     return div_node
 
 def create_paragraph_node():
@@ -270,5 +271,6 @@ def text_to_children(text):
     children = []
     text_nodes = text_to_textnode(text)
     for node in text_nodes:
-        children.append(TextNode.text_node_to_html_node(node))
+        if TextNode.text_node_to_html_node(node).value:
+            children.append(TextNode.text_node_to_html_node(node))
     return children

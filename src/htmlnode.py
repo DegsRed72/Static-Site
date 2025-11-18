@@ -60,7 +60,15 @@ class ParentNode(HTMLNode):
             raise ValueError("ChildNode must have a value")
         
         for child in self.children:
-            html_part = child.to_html()
+            try:
+                html_part = child.to_html()
+            except Exception as e:
+                print("Failing child:", repr(child))
+                print("Type:", type(child))
+                print("Tag:", getattr(child, "tag", None))
+                print("Value:", getattr(child, "value", None))
+                print("Props:", getattr(child, "props", None))
+                raise
             html_render = html_render + html_part
         
         if not self.props:
